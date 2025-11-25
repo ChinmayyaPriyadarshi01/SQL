@@ -1,0 +1,209 @@
+CREATE DATABASE IF NOT EXISTS Hospital_Management;
+USE Hospital_Management;
+
+CREATE TABLE Department (
+    dept_id INT PRIMARY KEY AUTO_INCREMENT,
+    dept_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15)
+);
+
+CREATE TABLE Doctor (
+    doctor_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    gender CHAR(1),
+    specialization VARCHAR(100),
+    phone VARCHAR(15),
+    email VARCHAR(100) UNIQUE,
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
+);
+
+CREATE TABLE Patient (
+    patient_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    gender CHAR(1),
+    dob DATE,
+    phone VARCHAR(15),
+    email VARCHAR(100),
+    address VARCHAR(255),
+    blood_group VARCHAR(5)
+);
+
+CREATE TABLE Room (
+    room_id INT PRIMARY KEY AUTO_INCREMENT,
+    room_number VARCHAR(10) UNIQUE,
+    room_type VARCHAR(50),
+    price_per_day DECIMAL(10,2),
+    is_occupied BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE Admission (
+    admission_id INT PRIMARY KEY AUTO_INCREMENT,
+    patient_id INT,
+    room_id INT,
+    admit_date DATE,
+    discharge_date DATE,
+    admit_reason VARCHAR(255),
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (room_id) REFERENCES Room(room_id)
+);
+
+CREATE TABLE Appointment (
+    appointment_id INT PRIMARY KEY AUTO_INCREMENT,
+    patient_id INT,
+    doctor_id INT,
+    appt_date DATETIME,
+    status VARCHAR(20) DEFAULT 'Scheduled',
+    remarks VARCHAR(255),
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(doctor_id)
+);
+
+CREATE TABLE Medicine (
+    med_id INT PRIMARY KEY AUTO_INCREMENT,
+    med_name VARCHAR(100),
+    manufacturer VARCHAR(100),
+    price DECIMAL(10,2)
+);
+
+CREATE TABLE Prescription (
+    presc_id INT PRIMARY KEY AUTO_INCREMENT,
+    patient_id INT,
+    doctor_id INT,
+    presc_date DATE,
+    notes VARCHAR(500),
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(doctor_id)
+);
+
+CREATE TABLE Prescription_Medicine (
+    presc_id INT,
+    med_id INT,
+    dosage VARCHAR(100),
+    duration_days INT,
+    PRIMARY KEY (presc_id, med_id),
+    FOREIGN KEY (presc_id) REFERENCES Prescription(presc_id),
+    FOREIGN KEY (med_id) REFERENCES Medicine(med_id)
+);
+
+CREATE TABLE Bill (
+    bill_id INT PRIMARY KEY AUTO_INCREMENT,
+    patient_id INT,
+    bill_date DATE,
+    total_amount DECIMAL(12,2),
+    paid_amount DECIMAL(12,2) DEFAULT 0,
+    due_amount DECIMAL(12,2),
+    remarks VARCHAR(255),
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id)
+);
+
+CREATE TABLE Staff (
+    staff_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100),
+    role VARCHAR(50),
+    phone VARCHAR(15),
+    hire_date DATE
+);
+
+INSERT INTO Department (dept_name, phone) VALUES
+('General Medicine', '011-100100'),
+('Pediatrics', '011-100200'),
+('Orthopedics', '011-100300'),
+('Cardiology', '011-100400');
+
+INSERT INTO Doctor (first_name, last_name, gender, specialization, phone, email, dept_id) VALUES
+('Amit', 'Khan', 'M', 'General Physician', '9876500011', 'amit.khan@hospital.com', 1),
+('Neha', 'Roy', 'F', 'Pediatrician', '9876500022', 'neha.roy@hospital.com', 2),
+('Sunil', 'Mehra', 'M', 'Orthopedic Surgeon', '9876500033', 'sunil.m@hospital.com', 3),
+('Riya', 'Patel', 'F', 'Cardiologist', '9876500044', 'riya.patel@hospital.com', 4);
+
+INSERT INTO Patient (first_name, last_name, gender, dob, phone, email, address, blood_group) VALUES
+('Rahul', 'Kumar', 'M', '1990-05-21', '9000000011', 'rahul.k@example.com', '101 A Street, City', 'B+'),
+('Sana', 'Khan', 'F', '2015-08-12', '9000000022', 'sana.k@example.com', '22 B Lane, City', 'O+'),
+('Vikram', 'Singh', 'M', '1975-02-02', '9000000033', 'vikram.s@example.com', '7 C Road, City', 'A+');
+
+INSERT INTO Room (room_number, room_type, price_per_day, is_occupied) VALUES
+('G-101', 'General', 1000.00, FALSE),
+('P-201', 'Private', 4000.00, FALSE),
+('ICU-1', 'ICU', 10000.00, FALSE);
+
+INSERT INTO Admission (patient_id, room_id, admit_date, discharge_date, admit_reason) VALUES
+(3, 3, '2025-11-20', NULL, 'Cardiac observation');
+
+INSERT INTO Appointment (patient_id, doctor_id, appt_date, status, remarks) VALUES
+(1, 1, '2025-11-25 10:00:00', 'Scheduled', 'Fever & cold'),
+(2, 2, '2025-11-25 11:30:00', 'Scheduled', 'Routine pediatric check'),
+(3, 4, '2025-11-24 09:00:00', 'Completed', 'Follow-up');
+
+INSERT INTO Medicine (med_name, manufacturer, price) VALUES
+('Paracetamol', 'PharmaA', 10.00),
+('Amoxicillin', 'PharmaB', 25.00),
+('Atorvastatin', 'PharmaC', 50.00);
+
+INSERT INTO Prescription (patient_id, doctor_id, presc_date, notes) VALUES
+(1, 1, '2025-11-25', 'Take rest, fluids'),
+(3, 4, '2025-11-24', 'Start cardiac meds');
+
+INSERT INTO Prescription_Medicine (presc_id, med_id, dosage, duration_days) VALUES
+(1, 1, '1 tab every 8 hours', 3),
+(2, 3, '1 tab at night', 30);
+
+INSERT INTO Bill (patient_id, bill_date, total_amount, paid_amount, due_amount, remarks) VALUES
+(3, '2025-11-24', 15000.00, 5000.00, 10000.00, 'ICU charges partially paid');
+
+INSERT INTO Staff (name, role, phone, hire_date) VALUES
+('Kavita Sharma', 'Nurse', '9800001111', '2022-06-01'),
+('Ramesh Gupta', 'Lab Technician', '9800002222', '2021-03-15');
+
+SELECT d.doctor_id, d.first_name, d.last_name, d.specialization, dept.dept_name
+FROM Doctor d
+LEFT JOIN Department dept ON d.dept_id = dept.dept_id;
+
+SELECT a.appointment_id, p.first_name, p.last_name,
+       doc.first_name, doc.last_name,
+       a.appt_date, a.status, a.remarks
+FROM Appointment a
+JOIN Patient p ON a.patient_id = p.patient_id
+JOIN Doctor doc ON a.doctor_id = doc.doctor_id
+WHERE a.appt_date BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY)
+ORDER BY a.appt_date;
+
+SELECT adm.admission_id, p.first_name, p.last_name, r.room_number, r.room_type, adm.admit_date, adm.discharge_date
+FROM Admission adm
+JOIN Patient p ON adm.patient_id = p.patient_id
+JOIN Room r ON adm.room_id = r.room_id;
+
+SELECT pr.presc_id, pr.presc_date, doc.first_name, doc.last_name, pm.med_id, m.med_name, pm.dosage, pm.duration_days
+FROM Prescription pr
+JOIN Prescription_Medicine pm ON pr.presc_id = pm.presc_id
+JOIN Medicine m ON pm.med_id = m.med_id
+JOIN Doctor doc ON pr.doctor_id = doc.doctor_id
+WHERE pr.patient_id = 1;
+
+SELECT b.bill_id, p.first_name, p.last_name, b.total_amount, b.paid_amount, b.due_amount
+FROM Bill b
+JOIN Patient p ON b.patient_id = p.patient_id
+WHERE b.due_amount > 0;
+
+SELECT room_id, room_number, room_type, price_per_day, is_occupied FROM Room;
+
+DELIMITER 
+CREATE TRIGGER trg_room_occupy_after_admit
+AFTER INSERT ON Admission
+FOR EACH ROW
+BEGIN
+    UPDATE Room SET is_occupied = TRUE WHERE room_id = NEW.room_id;
+END;
+
+CREATE TRIGGER trg_room_free_after_discharge
+AFTER UPDATE ON Admission
+FOR EACH ROW
+BEGIN
+    IF NEW.discharge_date IS NOT NULL THEN
+        UPDATE Room SET is_occupied = FALSE WHERE room_id = NEW.room_id;
+    END IF;
+END;
+
+DELIMITER ;
